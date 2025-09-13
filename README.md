@@ -1,59 +1,76 @@
-# AwsCdkIac
+Aplikacja Full-Stack z AWS CDK (IaC)
+Projekt ten demonstruje budowę i wdrożenie kompletnej, serwerlessowej aplikacji webowej (Angular + Node.js) w chmurze AWS. Cała infrastruktura – od hostingu frontendu po logikę backendu – jest zdefiniowana jako kod (IaC - Infrastructure as Code) za pomocą biblioteki AWS CDK w języku TypeScript.
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.1.6.
+Aplikacja składa się z formularza kontaktowego, który pozwala użytkownikom na wysłanie wiadomości. Dane są zapisywane w bazie danych, a na wskazany adres e-mail wysyłane jest powiadomienie.
 
-## Development server
+## 🚀 Stworzona Infrastruktura
+W ramach projektu, za pomocą kodu, zostały stworzone i skonfigurowane następujące zasoby AWS:
 
-To start a local development server, run:
+### Frontend Hosting:
 
-```bash
-ng serve
-```
+- S3 Bucket: Prywatny bucket do bezpiecznego przechowywania statycznych plików aplikacji Angular.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- CloudFront: Globalna sieć CDN, która udostępnia aplikację użytkownikom na całym świecie z niskim opóźnieniem i darmowym certyfikatem SSL (HTTPS).
 
-## Code scaffolding
+### Backend API:
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- API Gateway: Publiczny endpoint REST API, który przyjmuje zapytania POST z formularza.
 
-```bash
-ng generate component component-name
-```
+- Funkcja Lambda: Logika backendu napisana w Node.js (TypeScript), która:
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+  - Przetwarza dane z formularza.
 
-```bash
-ng generate --help
-```
+  - Zapisuje wiadomość w bazie danych.
 
-## Building
+  - Wysyła powiadomienie e-mail.
 
-To build the project run:
+- DynamoDB: W pełni zarządzana i skalowalna baza danych NoSQL do przechowywania wiadomości.
 
-```bash
-ng build
-```
+- Amazon SES (Simple Email Service): Usługa do wysyłania powiadomień e-mail.
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Automatyzacja Wdrożenia:
 
-## Running unit tests
+S3 Deployment: Mechanizm, który po każdej zmianie w kodzie frontendu automatycznie wgrywa nowe pliki do S3 i unieważnia cache w CloudFront.
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+Główną zaletą podejścia IaC jest to, że całą infrastrukturę można zniszczyć jedną komendą (cdk destroy) i odtworzyć ją w kilka minut (cdk deploy), mając pewność, że za każdym razem będzie identyczna i poprawnie skonfigurowana.
 
-```bash
-ng test
-```
+## 🛠️ Proces Tworzenia (Krok po Kroku)
+Poniżej znajduje się opis kluczowych kroków, które zostały podjęte w celu stworzenia i wdrożenia projektu.
 
-## Running end-to-end tests
+1. Oddzielenie Kodu Infrastruktury
+   Na początku został stworzony dedykowany folder cloud/, aby logicznie oddzielić kod aplikacji od kodu definiującego infrastrukturę. To kluczowa, dobra praktyka.
 
-For end-to-end (e2e) testing, run:
+2. Inicjalizacja Projektu CDK
+   Wewnątrz folderu cloud/ został zainicjowany nowy projekt AWS CDK przy użyciu języka TypeScript.
 
-```bash
-ng e2e
-```
+cdk init app --language typescript
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+3. Instalacja Biblioteki AWS CDK
+   Została zainstalowana główna biblioteka aws-cdk-lib, która dostarcza tzw. Konstrukty (Constructs) – gotowe "klocki" do budowania zasobów AWS w kodzie.
 
-## Additional Resources
+npm install aws-cdk-lib
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Dzięki tej bibliotece można w prosty sposób tworzyć zasoby, np. new s3.Bucket(...) czy new lambda.Function(...).
+
+4. Przygotowanie Środowiska AWS (Bootstrap)
+   Przed pierwszym wdrożeniem zostało przygotowane konto AWS w danym regionie. Komenda cdk bootstrap tworzy niezbędne zasoby "narzędziowe" (m.in. bucket S3 na assety i role IAM), które umożliwiają CDK bezpieczne zarządzanie infrastrukturą. Jest to operacja jednorazowa dla każdego regionu.
+
+cdk bootstrap
+
+5. Definicja Zasobów w Kodzie
+   Cała architektura opisana powyżej została zdefiniowana jako kod w pliku cloud/lib/cloud-stack.ts. To serce projektu IaC, które zawiera precyzyjne instrukcje, jak ma wyglądać każdy element chmury.
+
+6. Wdrożenie na AWS
+   Ostatnim krokiem było wdrożenie. Komenda cdk deploy uruchamia dwuetapowy proces:
+
+### Faza 1: Synteza (na Twoim komputerze)
+
+CDK tłumaczy kod TypeScript na szablon JSON, czyli plan zrozumiały dla AWS CloudFormation.
+
+CDK pakuje lokalne zasoby (np. kod Lambdy, pliki Angulara z /dist) i wysyła je do "narzędziowego" bucketa S3 w chmurze.
+
+### Faza 2: Wykonanie (w chmurze AWS)
+
+Szablon JSON jest przekazywany do usługi AWS CloudFormation.
+
+CloudFormation, działając jak kierownik budowy, czyta plan i krok po kroku tworzy lub aktualizuje wszystkie zasoby w AWS.
