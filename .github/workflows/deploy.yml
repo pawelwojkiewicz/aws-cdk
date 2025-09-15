@@ -37,6 +37,11 @@ jobs:
       # Krok 4: Zainstaluj wszystkie zależności (dla Angulara, Lambdy i CDK)
       - name: Install dependencies
         run: npm install
+          
+      #  Zainstaluj zależności dla projektu CDK
+      - name: Install CDK dependencies
+        run: npm install
+        working-directory: cloud # Uruchom tę komendę w folderze 'cloud'
 
       # Krok 5: Zbuduj aplikację Angulara
       # To stworzy folder /dist z gotowymi plikami
