@@ -41,7 +41,7 @@ jobs:
       # Krok 5: Zbuduj aplikację Angulara
       # To stworzy folder /dist z gotowymi plikami
       - name: Build Angular App
-        run: ng build
+        run: npm run build
 
       # Krok 6: Wdróż infrastrukturę i aplikację za pomocą CDK
       - name: Deploy with CDK
