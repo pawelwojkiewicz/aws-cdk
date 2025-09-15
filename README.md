@@ -76,6 +76,10 @@ Dzięki tej bibliotece można w prosty sposób tworzyć zasoby, np. new s3.Bucke
    - Przetwarza dane z formularza.
    - Zapisuje wiadomość w bazie danych.
    - Wysyła powiadomienie e-mail.
+   oraz zainstalowanie paczek do wykonania tych czynności:
+     - ``` "@aws-sdk/client-dynamodb": "^3.886.0"```
+     - ```"@aws-sdk/client-ses": "^3.886.0"```
+     - ```"@aws-sdk/lib-dynamodb": "^3.886.0",```
 
 6. Wdrożenie na AWS
    Ostatnim krokiem było wdrożenie. Komenda cdk deploy uruchamia dwuetapowy proces:
