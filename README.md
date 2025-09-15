@@ -81,7 +81,21 @@ Dzięki tej bibliotece można w prosty sposób tworzyć zasoby, np. new s3.Bucke
      - ```"@aws-sdk/client-ses": "^3.886.0"```
      - ```"@aws-sdk/lib-dynamodb": "^3.886.0",```
 
-6. Wdrożenie na AWS
+
+7. 🤖 Automatyczne Wdrożenie (CI/CD)
+
+- Projekt jest w pełni zautomatyzowany przy użyciu GitHub Actions. Każde wypchnięcie (push) zmian do gałęzi main automatycznie uruchamia proces, który:
+
+- Instaluje wszystkie zależności projektu.
+    
+- Buduje produkcyjną wersję aplikacji Angular (ng build).
+    
+- Wdraża całą infrastrukturę i aplikację na AWS (cdk deploy).
+    
+- Proces można śledzić na żywo w zakładce "Actions" w repozytorium.
+
+
+8. Wdrożenie na AWS
    Ostatnim krokiem było wdrożenie. Komenda cdk deploy uruchamia dwuetapowy proces:
 
 ### Faza 1: Synteza (na Twoim komputerze)

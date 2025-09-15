@@ -1,0 +1,53 @@
+# Nazwa naszego procesu CI/CD, widoczna w zakładce "Actions" na GitHubie
+name: Deploy Full-Stack App to AWS
+
+# Wyzwalacz: Uruchom ten proces po każdym pushu na gałąź 'main'
+on:
+  push:
+    branches:
+      - main
+
+# Definicja zadań do wykonania
+jobs:
+  deploy:
+    # Uruchom ten proces na maszynie wirtualnej z najnowszym Ubuntu
+    runs-on: ubuntu-latest
+
+    # Definicja kroków do wykonania
+    steps:
+      # Krok 1: Pobierz kod z repozytorium
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Krok 2: Skonfiguruj środowisko Node.js (wersja 18)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      # Krok 3: Skonfiguruj poświadczenia AWS
+      # Ta akcja bezpiecznie pobierze klucze z GitHub Secrets i skonfiguruje AWS CLI
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1 # Ustaw swój region AWS
+
+      # Krok 4: Zainstaluj wszystkie zależności (dla Angulara, Lambdy i CDK)
+      - name: Install dependencies
+        run: npm install
+
+      # Krok 5: Zbuduj aplikację Angulara
+      # To stworzy folder /dist z gotowymi plikami
+      - name: Build Angular App
+        run: ng build
+
+      # Krok 6: Wdróż infrastrukturę i aplikację za pomocą CDK
+      - name: Deploy with CDK
+        # Przechodzimy do folderu /cloud i uruchamiamy deployment
+        # Flaga --require-approval never (akcpetuje automatycznie wszystkie zgody po wywołaniu funkcji cdk deploy)
+        # Flaga --all wdraża wszystkie stacki (cloud-stack.ts itp.) w aplikacji (na przyszłość)
+        run: |
+          cd cloud
+          npx cdk deploy --all --require-approval never
