@@ -1,5 +1,4 @@
-import { CfnOutput, RemovalPolicy } from 'aws-cdk-lib';
-import * as cdk from 'aws-cdk-lib';
+import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
@@ -12,14 +11,22 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 
-export class CloudStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+// ✅ KROK 1: Tworzymy nowy "typ" dla naszych właściwości.
+// Mówimy: "Nasze właściwości to wszystko to, co ma standardowy StackProps, PLUS nasza własna właściwość 'stage'".
+export interface CloudStackProps extends StackProps {
+  readonly stage: string;
+}
+
+export class CloudStack extends Stack {
+  // ✅ KROK 2: Modyfikujemy konstruktor, aby akceptował nasz nowy typ 'CloudStackProps'.
+  constructor(scope: Construct, id: string, props: CloudStackProps) {
     super(scope, id, props);
 
+    const stage = props.stage;
     // ===================================================================================
     // ## 1. Definicja S3 Bucket do przechowywania plików aplikacji Angulara
     // ===================================================================================
-    const websiteBucket = new s3.Bucket(this, 'AwsCdkIacBucket', {
+    const websiteBucket = new s3.Bucket(this, `AwsCDKWebsiteBucket-${stage}`, {
       // Dostęp do plików będzie realizowany wyłącznie przez CloudFront,
       // dlatego bucket nie musi być publicznie dostępny. To bezpieczniejsze.
       publicReadAccess: false,
@@ -34,7 +41,7 @@ export class CloudStack extends cdk.Stack {
 
     // ## 2. Definicja Tabeli DynamoDB do przechowywania wiadomości
     // ===================================================================================
-    const messagesTable = new dynamodb.Table(this, 'MessagesTable', {
+    const messagesTable = new dynamodb.Table(this, `AwsCDKMessagesTable-${stage}`, {
       // "Klucz partycji" to unikalny identyfikator każdego rekordu.
       // W naszym przypadku email będzie dobrym identyfikatorem.
       partitionKey: { name: 'email', type: dynamodb.AttributeType.STRING },
@@ -52,7 +59,7 @@ export class CloudStack extends cdk.Stack {
     // ## 3. Definicja Funkcji Lambda i nadanie jej uprawnień
     // ===================================================================================
 
-    const contactLambda = new NodejsFunction(this, 'ContactLambdaHandlerCDK', {
+    const contactLambda = new NodejsFunction(this, `AwsCDKContactLambda-${stage}`, {
       runtime: Runtime.NODEJS_LATEST,
       // Wskazujemy bezpośrednio na plik źródłowy TypeScript
       entry: path.join(__dirname, '..', 'lambdas', 'contact-form.ts'),
@@ -80,7 +87,7 @@ export class CloudStack extends cdk.Stack {
     );
 
     // ## 4. Definicja API Gateway
-    const api = new apigateway.LambdaRestApi(this, 'ContactEndpointApi', {
+    const api = new apigateway.LambdaRestApi(this, `AwsCDKContactLambda-${stage}`, {
       handler: contactLambda,
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
@@ -91,7 +98,7 @@ export class CloudStack extends cdk.Stack {
     // ===================================================================================
     // ## 3. Definicja Dystrybucji CloudFront (CDN)
     // ===================================================================================
-    const distribution = new cloudfront.Distribution(this, 'AwsCdkIacDistribution', {
+    const distribution = new cloudfront.Distribution(this, `AwsCDKDistribution-${stage}`, {
       defaultBehavior: {
         origin: new origins.S3Origin(websiteBucket),
         // Przekierowuj cały ruch z http na https
@@ -120,7 +127,7 @@ export class CloudStack extends cdk.Stack {
     // ===================================================================================
     // ## 4. Automatyczny Deployment plików z /dist do S3
     // ===================================================================================
-    new s3deploy.BucketDeployment(this, 'DeployAwsCdkIacApp', {
+    new s3deploy.BucketDeployment(this, `AwsCDKDeployWebsite-${stage}`, {
       // Źródło: wskaż folder, w którym Angular buduje Twoją aplikację.
       // Upewnij się, że 'nazwa-twojego-projektu-angular' jest poprawna!
       sources: [
@@ -137,17 +144,17 @@ export class CloudStack extends cdk.Stack {
     });
 
     // ===================================================================================
-    // ## 5. Wyświetlenie adresu URL naszej strony w terminalu po wdrożeniu
+    // ## 7. Wyświetlenie adresu URL naszej strony w terminalu po wdrożeniu
+    // ## Outputs - Używamy 'stage' do tworzenia unikalnych nazw outputów
     // ===================================================================================
-    // ## 7. Wyświetlenie adresów URL
-    new CfnOutput(this, 'CloudFrontURL', {
+    new CfnOutput(this, `CloudFrontURL-${stage}`, {
       value: `https://${distribution.distributionDomainName}`,
-      description: 'The distribution URL of the Angular App',
+      description: `The distribution URL for the ${stage} stage`,
     });
 
-    new CfnOutput(this, 'ApiUrl', {
+    new CfnOutput(this, `ApiUrl-${stage}`, {
       value: api.url,
-      description: 'The URL of the API Gateway',
+      description: `The API URL for the ${stage} stage`,
     });
   }
 }

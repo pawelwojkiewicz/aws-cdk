@@ -1,11 +1,11 @@
 # Nazwa naszego procesu CI/CD, widoczna w zakładce "Actions" na GitHubie
 name: Deploy Full-Stack App to AWS
 
-# Wyzwalacz: Uruchom ten proces po każdym pushu na gałąź 'main'
+# Wyzwalacz: Uruchom ten proces po każdym pushu na DOWOLNĄ gałąź
 on:
   push:
     branches:
-      - main
+      - '**'
 
 # Definicja zadań do wykonania
 jobs:
@@ -48,11 +48,22 @@ jobs:
       - name: Build Angular App
         run: npm run build
 
+
+  # ✅ NOWY KROK: Ustal, który stack wdrożyć na podstawie nazwy gałęzi
+      - name: Determine Stack Name
+        run: |
+         if [ "${{ github.ref_name }}" = "main" ]; then
+           echo "STACK_TO_DEPLOY=prod-CloudStack" >> $GITHUB_ENV
+           echo "Deploying to PRODUCTION"
+         else
+           echo "STACK_TO_DEPLOY=test-CloudStack" >> $GITHUB_ENV
+           echo "Deploying to TEST environment from branch ${{ github.ref_name }}"
+         fi
+
       # Krok 6: Wdróż infrastrukturę i aplikację za pomocą CDK
       - name: Deploy with CDK
         # Przechodzimy do folderu /cloud i uruchamiamy deployment
         # Flaga --require-approval never (akcpetuje automatycznie wszystkie zgody po wywołaniu funkcji cdk deploy)
         # Flaga --all wdraża wszystkie stacki (cloud-stack.ts itp.) w aplikacji (na przyszłość)
-        run: |
-          cd cloud
-          npx cdk deploy --all --require-approval never
+        run: npx cdk deploy ${{ env.STACK_TO_DEPLOY }} --require-approval never
+        working-directory: cloud
