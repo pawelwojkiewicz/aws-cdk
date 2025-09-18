@@ -87,7 +87,7 @@ export class CloudStack extends Stack {
     );
 
     // ## 4. Definicja API Gateway
-    const api = new apigateway.LambdaRestApi(this, `AwsCDKContactLambda-${stage}`, {
+    const api = new apigateway.LambdaRestApi(this, `AwsCDKContactApi-${stage}`, {
       handler: contactLambda,
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
