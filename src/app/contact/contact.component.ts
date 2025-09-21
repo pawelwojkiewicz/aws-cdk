@@ -7,6 +7,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-contact',
@@ -29,7 +30,7 @@ export class ContactComponent {
 
   submitForm() {
     this.http
-      .post(' https://ao7k3tjqm7.execute-api.eu-north-1.amazonaws.com/prod', this.form.value)
+      .post(environment.apiUrl, this.form.value)
       .subscribe(() => alert('Wiadomość wysłana!'));
   }
 }

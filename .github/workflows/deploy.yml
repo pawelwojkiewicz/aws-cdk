@@ -43,11 +43,19 @@ jobs:
         run: npm install
         working-directory: cloud # Uruchom tę komendę w folderze 'cloud'
 
-      # Krok 5: Zbuduj aplikację Angulara
-      # To stworzy folder /dist z gotowymi plikami
+      # ✅ ZAKTUALIZOWANY KROK 5: Zbuduj aplikację Angulara z odpowiednią konfiguracją
+      # Ta sekcja teraz zawiera logikę warunkową.
       - name: Build Angular App
-        run: npm run build
-
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "Building for PRODUCTION environment"
+            # Używamy flagi --configuration production, aby podmienić pliki environment.ts
+            npm run build -- --configuration production
+          else
+            echo "Building for TEST environment"
+            # Budujemy bez dodatkowej flagi, używając domyślnego environment.ts
+            npm run build
+          fi
 
   # ✅ NOWY KROK: Ustal, który stack wdrożyć na podstawie nazwy gałęzi
       - name: Determine Stack Name
