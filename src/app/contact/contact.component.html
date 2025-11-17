@@ -1,43 +1,31 @@
 <!-- contact.component.html -->
-<form [formGroup]="form" (ngSubmit)="submitForm()" novalidate>
-    <div class="form-group">
-        <label for="name">Name Test</label>
-        <input
-                id="name"
-                type="text"
-                formControlName="name">
+<form [formGroup]="form" novalidate>
+  <div class="form-group">
+    <label for="name">Name Test</label>
+    <input id="name" type="text" formControlName="name" />
+  </div>
 
+  <div class="form-group">
+    <label for="email">E-mail</label>
+    <input id="email" type="email" formControlName="email" />
+  </div>
 
-    </div>
+  <div class="form-group">
+    <label for="message">Wiadomość</label>
+    <textarea id="message" formControlName="message" rows="4"></textarea>
+  </div>
 
-    <div class="form-group">
-        <label for="email">E-mail</label>
-        <input
-                id="email"
-                type="email"
-                formControlName="email">
+  <button (click)="submitForm()" class="submit-btn">Wyślij</button>
 
-
-    </div>
-
-    <div class="form-group">
-        <label for="message">Wiadomość</label>
-        <textarea
-                id="message"
-                formControlName="message"
-                rows="4"></textarea>
-
-    </div>
-
-    <button
-            type="submit"
-            class="submit-btn">
-        Wyślij
-    </button>
-
-    <button
-            (click)="getMessages()"
-            class="submit-btn">
-        Pobierz wiadomosci
-    </button>
+  <button (click)="getMessages()" class="submit-btn">Pobierz wiadomosci</button>
 </form>
+
+<h3>Wiadomosci:</h3>
+@for (item of messages(); track item.email) {
+  <div>
+    {{ item.createdAt }}
+    {{ item.email }}
+    {{ item.message }}
+    {{ item.name }}
+  </div>
+}

@@ -1,5 +1,5 @@
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -17,6 +17,7 @@ import { environment } from '../../environments/environment';
 })
 export class ContactComponent {
   public form: FormGroup;
+  public messages = signal<any[]>([]);
   http = inject(HttpClient);
   fb = inject(FormBuilder);
 
@@ -36,6 +37,9 @@ export class ContactComponent {
   }
 
   getMessages() {
-    this.http.get(environment.apiUrl).subscribe(() => alert('Wiadomośći pobrane!'));
+    this.http.get(environment.apiUrl).subscribe((m: any) => {
+      alert('Wiadomośći pobrane!');
+      this.messages.set(m.messages);
+    });
   }
 }
