@@ -54,7 +54,7 @@ jobs:
           else
             echo "Building for TEST environment"
             # Budujemy bez dodatkowej flagi, używając domyślnego environment.ts
-            npm run build
+            npm run build -- --configuration development
           fi
 
   # ✅ NOWY KROK: Ustal, który stack wdrożyć na podstawie nazwy gałęzi
