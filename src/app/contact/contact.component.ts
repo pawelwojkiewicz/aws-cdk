@@ -29,6 +29,7 @@ export class ContactComponent {
   }
 
   submitForm() {
+    console.log(environment.apiUrl);
     this.http
       .post(environment.apiUrl, this.form.value)
       .subscribe(() => alert('Wiadomość wysłana!'));
