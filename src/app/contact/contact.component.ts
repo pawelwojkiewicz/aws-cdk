@@ -34,4 +34,8 @@ export class ContactComponent {
       .post(environment.apiUrl, this.form.value)
       .subscribe(() => alert('Wiadomość wysłana!'));
   }
+
+  getMessages() {
+    this.http.get(environment.apiUrl).subscribe(() => alert('Wiadomośći pobrane!'));
+  }
 }

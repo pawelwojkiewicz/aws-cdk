@@ -77,6 +77,9 @@ export class CloudStack extends Stack {
     // Dajemy Lambdzie uprawnienia do zapisu w naszej tabeli DynamoDB
     messagesTable.grantWriteData(contactLambda);
 
+    // ✅ NOWE UPRAWNIENIE: Nadajemy uprawnienia do odczytu (dla operacji Scan)
+    messagesTable.grantReadData(contactLambda);
+
     // Dajemy Lambdzie uprawnienia do wysyłania e-maili przez SES
     contactLambda.addToRolePolicy(
       new iam.PolicyStatement({
@@ -91,7 +94,7 @@ export class CloudStack extends Stack {
       handler: contactLambda,
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
-        allowMethods: ['POST'],
+        allowMethods: ['POST', 'GET'],
       },
     });
 
