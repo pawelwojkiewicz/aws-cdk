@@ -7,11 +7,12 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-contact',
-  imports: [FormsModule, HttpClientModule, ReactiveFormsModule],
+  imports: [FormsModule, HttpClientModule, ReactiveFormsModule, RouterLink],
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.css',
 })
